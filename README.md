@@ -189,6 +189,14 @@ Security teams investigate each phase using endpoint, identity, and network tele
 
 ---
 
+# MITRE ATT&CK Lifecycle Overview
+
+The MITRE ATT&CK framework provides a common language for describing adversary behavior and helps defenders map observed activity to known attacker techniques.
+
+![MITRE ATT&CK Lifecycle](images/mitre-attack-lifecycle.png)
+
+---
+
 # SOC Analyst Perspective
 
 A Security Operations Center analyst investigating similar incidents would examine multiple data sources.
