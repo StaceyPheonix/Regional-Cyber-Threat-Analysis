@@ -1,3 +1,8 @@
+**Author:** Stacey Menley  
+**Activity:** Independent Cybersecurity Research and Technical Analysis  
+**Focus:** Regional cyber incidents, threat intelligence, MITRE ATT&CK, SOC investigation, and detection opportunities  
+**Purpose:** Professional cybersecurity development and application of Security+ concepts
+
 # Regional Cyber Threat Analysis: Chelan & Okanogan County Incidents
 
 ## Overview
