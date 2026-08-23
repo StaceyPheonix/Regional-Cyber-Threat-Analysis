@@ -12,113 +12,135 @@ In July 2026, U.S. water and wastewater utilities reported cyber incidents invol
 
 Federal agencies warned that malicious cyber actors were targeting exposed PLCs and that some incidents resulted in operational disruption.
 
-The activity is significant from a Security Operations Center (SOC) perspective because compromise of OT systems can affect physical processes, operator visibility, and availability of essential services.
+From a SOC perspective, this activity is significant because compromise of OT systems can affect physical processes, operator visibility, and availability of essential services.
 
-Although the activity has been widely discussed in connection with Iranian-affiliated threat actors, recent incidents have not been publicly and definitively attributed to Iran by U.S. federal investigators.
+Although the activity has been publicly associated with Iranian-affiliated threat actors, attribution should be treated cautiously unless supported by authoritative evidence.
 
-This case study focuses on the reported attacker behavior and the resulting SOC detection opportunities rather than threat-actor attribution.
-
----
-
-## 2. Why This Matters to a SOC
-
-OT environments differ from traditional enterprise IT environments.
-
-A SOC analyst must consider:
-
-- Availability of physical processes
-- Safety implications
-- PLC and HMI communications
-- Engineering workstation activity
-- Remote access
-- Authentication behavior
-- Network segmentation
-- Changes to controller configurations
-
-A successful compromise may not initially appear as traditional malware.
-
-Instead, suspicious activity may appear as:
-
-- An unexpected remote connection
-- Unauthorized authentication
-- PLC configuration changes
-- Password changes
-- Loss of operator visibility
-- Unexpected communication between IT and OT systems
+**SOC Focus:**  
+This case examines observable attacker behavior, potential telemetry, detection opportunities, and analyst investigation steps rather than attempting to prove attribution.
 
 ---
 
-## 3. Attack Surface
+## 2. SOC Investigation Objectives
 
-The reported activity highlights several areas that should receive SOC monitoring:
+A SOC analyst investigating this activity would attempt to determine:
 
-| Attack Surface | SOC Concern |
+- Was an OT device exposed to the internet?
+- Was unauthorized authentication observed?
+- Did an external system establish communication with a PLC?
+- Were credentials changed?
+- Were PLC configurations modified?
+- Was communication between IT and OT networks abnormal?
+- Did operator visibility or device availability change?
+- What activity occurred immediately before and after the event?
+
+---
+
+## 3. Relevant Attack Surface
+
+| Attack Surface | SOC Monitoring Concern |
 |---|---|
-| Internet-facing PLCs | Unauthorized remote access |
-| Remote administration | Compromised credentials |
-| Default or weak credentials | Account compromise |
-| Exposed OT services | External reconnaissance |
-| Poor network segmentation | IT-to-OT movement |
-| Engineering workstations | High-value access point |
-| PLC configuration interfaces | Unauthorized process changes |
+| Internet-facing PLCs | Unauthorized inbound connections |
+| Remote administration | Credential compromise |
+| Default or weak credentials | Authentication attacks |
+| Exposed OT services | Reconnaissance |
+| Engineering workstations | High-value administrative access |
+| IT-to-OT connectivity | Lateral movement |
+| PLC management interfaces | Unauthorized configuration changes |
+| HMI systems | Loss of operator visibility |
 
 ---
 
-## 4. Reported Attacker Behavior
+## 4. Reported Attacker Behaviors
 
-Public reporting and federal advisories identify several behaviors relevant to defenders:
+Public reporting and federal cybersecurity advisories describe behaviors relevant to defenders, including:
 
 - Targeting internet-exposed PLCs
 - Remote access to OT devices
-- Unauthorized changes to device credentials
+- Unauthorized credential changes
 - Disruption of operator access
 - Potential manipulation of operational processes
-- Targeting of water and wastewater infrastructure
+- Targeting water and wastewater infrastructure
 
-These behaviors provide useful detection opportunities even when complete forensic timelines are unavailable.
+These behaviors can be translated into SOC detection opportunities even when complete forensic timelines are unavailable.
 
 ---
 
 ## 5. MITRE ATT&CK Mapping
 
-| Behavior | MITRE ATT&CK | SOC Relevance |
+| Reported / Suspected Behavior | MITRE ATT&CK | SOC Relevance |
 |---|---|---|
-| External access to exposed systems | T1190 - Exploit Public-Facing Application | Monitor exposed OT services |
-| Valid credentials | T1078 - Valid Accounts | Detect abnormal authentication |
+| Exploitation of exposed OT systems | T1190 - Exploit Public-Facing Application | Monitor internet-facing OT services |
+| Use of legitimate credentials | T1078 - Valid Accounts | Detect abnormal authentication |
 | Remote access | T1021 - Remote Services | Monitor unexpected remote connections |
-| Network discovery | T1046 - Network Service Scanning | Identify reconnaissance |
-| Configuration manipulation | T1565 - Data Manipulation | Monitor unauthorized changes |
-| Impact to operational processes | T1495 - Firmware Corruption / OT impact concepts | Investigate controller integrity |
+| Network reconnaissance | T1046 - Network Service Scanning | Identify scanning activity |
+| Manipulation of systems or data | T1565 - Data Manipulation | Monitor unauthorized changes |
+| Impact to OT operations | OT-specific impact techniques | Investigate changes affecting physical processes |
 
-> **Analyst note:** ATT&CK mappings represent defensive hypotheses based on reported behavior. They do not establish that every mapped technique was confirmed in these incidents.
+> **Analyst Note:** These mappings represent defensive hypotheses based on publicly reported behavior. They do not establish that every technique was confirmed during the incidents.
 
 ---
 
 ## 6. Detection Opportunities
 
-### Detection 1 - Internet-Facing PLC Access
+### Detection 1 — Internet-Facing PLC Access
 
-**Alert concept:**
+**Detection Objective:**  
+Identify unexpected external access to PLCs or OT management interfaces.
 
-Unexpected inbound connection to a PLC or OT management interface.
+**Potential Telemetry:**
+
+- Firewall logs
+- Network flow
+- IDS/IPS
+- PLC authentication logs
+- Remote access logs
+
+**Alert Concept:**
+
+```text
+External Source
+       ↓
+Internet-Facing OT Device
+       ↓
+Unexpected Connection
+```
 
 **Investigate:**
 
 - Source IP
 - Destination PLC
 - Destination port
+- Protocol
 - Authentication result
-- Time of connection
-- Previous connections from the source
+- Previous connections from source
 - Whether access was authorized
+- Maintenance schedule
 
 ---
 
-### Detection 2 - Abnormal PLC Authentication
+### Detection 2 — Abnormal PLC Authentication
 
-**Alert concept:**
+**Detection Objective:**  
+Identify possible credential attacks against OT devices.
 
-Repeated authentication failures followed by a successful login to an OT device.
+**Potential Telemetry:**
+
+- PLC authentication logs
+- Identity provider logs
+- Firewall logs
+- Remote access logs
+- SIEM authentication events
+
+**Alert Concept:**
+
+```text
+Multiple Authentication Failures
+       ↓
+Successful Authentication
+       ↓
+OT Device Access
+```
 
 **Investigate:**
 
@@ -128,33 +150,69 @@ Repeated authentication failures followed by a successful login to an OT device.
 - Successful authentication
 - Device accessed
 - Geographic source
-- Maintenance schedule
+- Maintenance window
+- Related authentication activity
 
 ---
 
-### Detection 3 - Unauthorized PLC Configuration Change
+### Detection 3 — Unauthorized PLC Configuration Change
 
-**Alert concept:**
+**Detection Objective:**  
+Detect changes to PLC configuration or control logic outside approved maintenance activity.
 
-PLC configuration or control logic changes outside an approved maintenance window.
+**Potential Telemetry:**
+
+- PLC logs
+- Engineering workstation logs
+- Authentication logs
+- Change-management records
+- Network telemetry
+
+**Alert Concept:**
+
+```text
+Engineering Workstation
+       ↓
+PLC Configuration Change
+       ↓
+Outside Approved Maintenance Window
+```
 
 **Investigate:**
 
 - Engineering workstation
 - User account
 - Source IP
-- Configuration change
+- Configuration changed
 - Time of change
-- Previous known-good configuration
+- Known-good configuration
 - Related authentication events
+- Other systems accessed by the same account
 
 ---
 
-### Detection 4 - Loss of OT Monitoring
+### Detection 4 — Loss of OT Monitoring
 
-**Alert concept:**
+**Detection Objective:**  
+Identify unexpected loss of communication between PLCs/HMIs and monitoring systems.
 
-PLC or HMI suddenly stops communicating with the monitoring system.
+**Potential Telemetry:**
+
+- Network monitoring
+- Firewall logs
+- HMI logs
+- PLC availability monitoring
+- SIEM alerts
+
+**Alert Concept:**
+
+```text
+PLC / HMI
+    ↓
+Loss of Expected Communication
+    ↓
+Monitoring System Alert
+```
 
 **Investigate:**
 
@@ -163,15 +221,33 @@ PLC or HMI suddenly stops communicating with the monitoring system.
 - Authentication changes
 - Firewall events
 - Configuration changes
-- Other affected devices
+- Other devices affected at the same time
 
 ---
 
-### Detection 5 - Unexpected IT-to-OT Communication
+### Detection 5 — Unexpected IT-to-OT Communication
 
-**Alert concept:**
+**Detection Objective:**  
+Identify unauthorized communication from corporate systems into the OT environment.
 
-A corporate endpoint communicates directly with an OT controller without an established business requirement.
+**Potential Telemetry:**
+
+- Firewall logs
+- NetFlow
+- IDS/IPS
+- Endpoint telemetry
+- DNS logs
+- SIEM network events
+
+**Alert Concept:**
+
+```text
+Corporate Endpoint
+       ↓
+Unexpected OT Connection
+       ↓
+PLC / HMI / Engineering System
+```
 
 **Investigate:**
 
@@ -182,6 +258,7 @@ A corporate endpoint communicates directly with an OT controller without an esta
 - User
 - Process generating the connection
 - Previous communication history
+- Whether the connection is normally authorized
 
 ---
 
@@ -189,67 +266,143 @@ A corporate endpoint communicates directly with an OT controller without an esta
 
 When an alert is generated, the analyst should establish:
 
-### Who?
+### WHO?
 
 - User account
 - Engineering account
 - Source system
+- Administrative account
 
-### What?
+### WHAT?
 
 - PLC
 - HMI
 - Engineering workstation
-- Configuration or credential change
+- Configuration change
+- Authentication event
+- Network connection
 
-### When?
+### WHEN?
 
-- Timestamp
-- Maintenance window
 - First observed activity
-- Duration
+- Authentication time
+- Configuration change time
+- Last known-good activity
+- Maintenance window
 
-### Where?
+### WHERE?
 
 - Source IP
 - Destination IP
 - OT network segment
 - External infrastructure
+- Geographic origin
 
-### What changed?
+### WHAT CHANGED?
 
 - Credentials
 - Configuration
 - Control logic
 - Network connectivity
 - Device availability
+- Operator visibility
 
 ---
 
-## 8. Defensive Controls
+## 8. Detection Engineering Considerations
 
-Recommended controls include:
+A mature detection should avoid relying on a single indicator.
 
-- Remove PLCs and other OT devices from direct internet exposure
+For example:
+
+```text
+External Connection
+       +
+Authentication Success
+       +
+OT Device Access
+       +
+Configuration Change
+       =
+High-Priority Investigation
+```
+
+Additional context should be incorporated where available:
+
+- Asset criticality
+- Known maintenance windows
+- User identity
+- Source reputation
+- Historical communication patterns
+- Network segmentation
+- Device baseline
+
+The strongest detection logic should combine multiple signals rather than alerting on a single event in isolation.
+
+---
+
+## 9. Defensive Controls
+
+Recommended defensive controls include:
+
+- Remove PLCs and OT devices from direct internet exposure
 - Enforce unique credentials
 - Restrict remote access
 - Segment IT and OT networks
 - Monitor OT network traffic
-- Restrict communications to authorized systems
+- Restrict communication to authorized systems
 - Maintain known-good PLC configurations
 - Monitor engineering workstation activity
 - Maintain manual operating procedures for critical processes
 
+These controls support both prevention and SOC visibility.
+
 ---
 
-## 9. Analyst Takeaways
+## 10. Analyst Assessment
 
 This case demonstrates several important SOC principles:
 
 - OT security requires visibility beyond traditional endpoint telemetry.
-- Internet-exposed industrial devices create a significant attack surface.
-- Authentication events can provide early indicators of compromise.
+- Internet-exposed industrial devices create significant attack surface.
+- Authentication activity can provide early indicators of compromise.
 - Configuration changes may be more important than traditional malware alerts.
 - Network monitoring is critical when endpoint visibility is limited.
 - Threat intelligence can be translated into concrete detection opportunities.
 - Attribution should remain separate from behavioral analysis when evidence is incomplete.
+
+### Primary SOC Takeaway
+
+> **Detect the behavior, validate the telemetry, establish the timeline, and investigate the impact.**
+
+---
+
+## 11. Analyst Skills Demonstrated
+
+This case demonstrates practical SOC skills including:
+
+- Threat intelligence analysis
+- OT security monitoring
+- MITRE ATT&CK mapping
+- Detection engineering
+- Network security monitoring
+- Authentication analysis
+- Incident investigation methodology
+- Alert triage
+- Defensive security analysis
+
+---
+
+## 12. References
+
+The case is supported by publicly available federal cybersecurity advisories and reputable cybersecurity reporting.
+
+Key sources include:
+
+- Cybersecurity and Infrastructure Security Agency (CISA)
+- Federal Bureau of Investigation (FBI)
+- National Security Agency (NSA)
+- Recorded Future News
+- Other publicly available government and cybersecurity reporting
+
+**Source validation note:** Public reporting and threat-intelligence claims should be independently validated before being used for attribution or incident-response decisions.
